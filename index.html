@@ -1,0 +1,924 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Student's Task Dashboard</title>
+    <style>
+        :root {
+  --primary: #a5b4fc;
+  --secondary: #93c5fd;
+  --accent: #fde68a;
+  --bg-color: linear-gradient(135deg, #a5b4fc, #93c5fd);
+  --header-padding: 8px 12px;
+  --header-font-size: 0.95rem;
+  --btn-padding: 6px 10px;
+}
+
+* {
+  box-sizing: border-box;
+  font-family: "Segoe UI", Arial, sans-serif;
+}
+body {
+  margin: 0;
+  min-height: 100vh;
+  color: #0f172a;
+  background: var(--bg-color);
+  background-size: cover;
+  background-position: center;
+  transition: background 0.25s ease, background-image 0.25s ease;
+}
+
+/* header */
+header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--header-padding);
+  background: var(--bg-color);
+  color: white;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+}
+header h1 {
+  margin: 0;
+  font-size: var(--header-font-size);
+  font-weight: 600;
+}
+.header-right {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+select,
+input[type="file"],
+.small-btn {
+  padding: var(--btn-padding);
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  font-size: 0.9rem;
+  background: rgba(255, 255, 255, 0.92);
+  color: #0f172a;
+}
+
+/* main menu */
+#main-menu {
+  padding: 18px;
+  text-align: center;
+}
+
+.controls {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+.control-btn {
+  padding: var(--btn-padding);
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+  color: white;
+  background: var(--bg-color);
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.12);
+  transition: transform 0.14s, box-shadow 0.14s;
+}
+.control-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.16);
+}
+
+#course-buttons {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-top: 12px;
+}
+.course-card {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--bg-color);
+  color: white;
+  padding: 10px 12px;
+  border-radius: 10px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.12);
+}
+.course-card button {
+  background: rgba(255, 255, 255, 0.12);
+  color: white;
+  border: 0;
+  padding: 6px 8px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+.course-card button:hover {
+  transform: translateY(-1px);
+}
+
+/* kanban board full-page view */
+.kanban-board {
+  display: none;
+  padding: 18px;
+  min-height: calc(100vh - 60px);
+  background: var(--bg-color);
+  background-attachment: fixed;
+}
+.board-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+.back-btn {
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 0;
+  cursor: pointer;
+  background: rgba(255, 255, 255, 0.92);
+  color: #0f172a;
+}
+.board-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.kanban {
+  display: flex;
+  gap: 20px;
+  justify-content: center;
+  align-items: flex-start;
+  flex-wrap: nowrap;
+  padding-top: 6px;
+  overflow-x: auto;
+}
+.column {
+  min-width: 260px;
+  width: 260px;
+  background: rgba(255, 255, 255, 0.92);
+  border-radius: 12px;
+  padding: 12px;
+  box-shadow: 0 6px 18px rgba(11, 3, 66, 0.04);
+}
+.column h3 {
+  margin: 0 0 10px 0;
+  padding: 10px;
+  border-radius: 8px;
+  background: var(--bg-color);
+  color: white;
+  text-align: center;
+  font-weight: 700;
+}
+
+.task {
+  background: var(--accent);
+  border-radius: 8px;
+  padding: 10px;
+  margin-bottom: 10px;
+  cursor: grab;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.12);
+  transition: transform 0.1s, box-shadow 0.1s;
+}
+.task:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.18);
+}
+.task.dragging {
+  opacity: 0.55;
+}
+
+/* Popups (Add / View) */
+.overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  z-index: 100;
+  justify-content: center;
+  align-items: center;
+}
+.modal {
+  background: white;
+  border-radius: 12px;
+  width: 340px;
+  padding: 16px;
+  box-shadow: 0 8px 26px rgba(0, 0, 0, 0.25);
+}
+.modal h3 {
+  margin: 0 0 8px 0;
+  font-size: 1.05rem;
+}
+.close-x {
+  position: absolute;
+  right: 18px;
+  top: 12px;
+  background: transparent;
+  border: 0;
+  font-size: 18px;
+  cursor: pointer;
+  color: #475569;
+}
+.form-row {
+  margin-bottom: 10px;
+}
+input[type="text"],
+input[type="date"],
+input[type="datetime-local"],
+select,
+textarea {
+  width: 100%;
+  padding: 8px;
+  border-radius: 8px;
+  border: 1px solid #e6e9ef;
+  font-size: 0.95rem;
+}
+textarea {
+  min-height: 72px;
+  resize: vertical;
+}
+.modal .actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 8px;
+}
+.btn {
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 0;
+  cursor: pointer;
+  color: white;
+  font-weight: 600;
+}
+.btn.primary {
+  background: var(--bg-color);
+}
+.btn.delete {
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+}
+
+/* responsive */
+@media (max-width: 920px) {
+  .kanban {
+    flex-direction: column;
+    align-items: center;
+  }
+  .column {
+    width: 90%;
+    min-width: unset;
+  }
+}
+
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1 style="font-size: var(--header-font-size)">
+        Student's Task Dashboard
+      </h1>
+      <div class="header-right">
+        <select
+          id="theme-selector"
+          onchange="changeTheme(this.value)"
+          title="Choose theme"
+        >
+          <option value="default">Default</option>
+          <option value="mint">Mint</option>
+          <option value="peach">Peach</option>
+          <option value="lavender">Lavender</option>
+          <option value="sky">Sky</option>
+          <option value="rose">Rose</option>
+          <option value="sand">Sand</option>
+        </select>
+
+        <label
+          style="
+            background: rgba(255, 255, 255, 0.9);
+            padding: 8px 10px;
+            border-radius: 8px;
+            cursor: pointer;
+          "
+        >
+          Upload background
+          <input
+            id="bgFile"
+            type="file"
+            accept="image/*"
+            onchange="handleBgUpload(event)"
+            style="display: none"
+          />
+        </label>
+
+        <button class="small-btn" onclick="removeBg()">
+          Remove Background
+        </button>
+      </div>
+    </header>
+
+    <div id="main-menu" style="padding: 20px; text-align: center">
+      <div class="controls">
+        <button class="control-btn" onclick="addCourse()">+ Add Course</button>
+      </div>
+
+      <div id="course-buttons" style="margin-top: 12px"></div>
+      <div style="margin-top: 12px; color: rgba(0, 0, 0, 0.45)">
+        Click a course to open its own task board
+      </div>
+    </div>
+
+    <div id="addTaskOverlay" class="overlay">
+      <div class="modal" role="dialog" aria-modal="true">
+        <button class="close-x" title="Close" onclick="closeAddPopup()">
+          ✕
+        </button>
+        <h3>Add Task</h3>
+        <div class="form-row">
+          <label>Task name</label>
+          <input id="input-task-name" type="text" />
+        </div>
+        <div class="form-row">
+          <label>Task type</label>
+          <select id="input-task-type">
+            <option>Individual</option>
+            <option>Group</option>
+            <option>Partner</option>
+          </select>
+        </div>
+        <div class="form-row">
+          <label>Priority</label>
+          <select id="input-priority">
+            <option>High</option>
+            <option>Medium</option>
+            <option>Low</option>
+          </select>
+        </div>
+        <div class="form-row">
+          <label>Date given</label>
+          <input id="input-date-given" type="date" />
+        </div>
+        <div class="form-row">
+          <label>Deadline (date & time)</label>
+          <input id="input-deadline" type="datetime-local" />
+        </div>
+        <div class="form-row">
+          <label>Notes</label>
+          <textarea id="input-notes" placeholder="Optional notes..."></textarea>
+        </div>
+        <div class="actions" style="margin-top: 8px">
+          <button class="btn primary" onclick="confirmAddTask()">
+            Add Task
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div id="viewTaskOverlay" class="overlay">
+      <div class="modal" role="dialog" aria-modal="true">
+        <button class="close-x" title="Close" onclick="closeViewPopup()">
+          ✕
+        </button>
+        <h3>Task Details</h3>
+        <div class="form-row">
+          <label>Task name</label>
+          <input id="edit-task-name" type="text" />
+        </div>
+        <div class="form-row">
+          <label>Task type</label>
+          <select id="edit-task-type">
+            <option>Individual</option>
+            <option>Group</option>
+            <option>Partner</option>
+          </select>
+        </div>
+        <div class="form-row">
+          <label>Priority</label>
+          <select id="edit-priority">
+            <option>High</option>
+            <option>Medium</option>
+            <option>Low</option>
+          </select>
+        </div>
+        <div class="form-row">
+          <label>Date given</label>
+          <input id="edit-date-given" type="date" />
+        </div>
+        <div class="form-row">
+          <label>Deadline</label>
+          <input id="edit-deadline" type="datetime-local" />
+        </div>
+        <div class="form-row">
+          <label>Notes</label>
+          <textarea id="edit-notes"></textarea>
+        </div>
+        <div style="display: flex; gap: 8px; justify-content: flex-end">
+          <button
+            class="btn delete"
+            id="deleteTaskBtn"
+            onclick="deleteCurrentTask()"
+          >
+            Delete
+          </button>
+          <button class="btn primary" onclick="saveTaskEdits()">Save</button>
+        </div>
+      </div>
+    </div>
+
+    <script>
+        /* ----------------------------
+  Core data: courses object and helpers
+---------------------------- */
+
+let courses = {};
+let activeCourseId = null;
+let currentAddColumn = null;
+let selectedTaskId = null;
+const TASK_STATUSES = ['todo', 'progress', 'done']; // Added for easy column referencing
+
+function uid(prefix = "id") {
+  return (
+    prefix +
+    "_" +
+    Date.now().toString(36) +
+    Math.random().toString(36).slice(2, 6)
+  );
+}
+
+/* --- LOCAL STORAGE FUNCTIONS (Persistence) --- */
+
+function saveCoursesToLocal() {
+  try {
+    const coursesJSON = JSON.stringify(courses);
+    localStorage.setItem("studentTaskDashboardCourses", coursesJSON);
+  } catch (error) {
+    console.error("Error saving data to local storage:", error);
+  }
+}
+
+function loadCoursesFromLocal() {
+  try {
+    const coursesJSON = localStorage.getItem("studentTaskDashboardCourses");
+    if (coursesJSON) {
+      courses = JSON.parse(coursesJSON);
+    }
+  } catch (error) {
+    console.error("Error loading data from local storage:", error);
+  }
+}
+
+/* ----------------------------
+  THEMES and BACKGROUND
+---------------------------- */
+const themes = {
+  default: ["#a5b4fc", "#93c5fd", "#fde68a"],
+  mint: ["#bbf7d0", "#99f6e4", "#bef264"],
+  peach: ["#fed7aa", "#fecaca", "#fcd34d"],
+  lavender: ["#e9d5ff", "#c4b5fd", "#fbcfe8"],
+  sky: ["#bae6fd", "#a5f3fc", "#fef9c3"],
+  rose: ["#fecdd3", "#fda4af", "#f9a8d4"],
+  sand: ["#fde68a", "#fcd34d", "#fef3c7"],
+};
+
+function changeTheme(name) {
+  const t = themes[name] || themes.default;
+  document.documentElement.style.setProperty("--primary", t[0]);
+  document.documentElement.style.setProperty("--secondary", t[1]);
+  document.documentElement.style.setProperty("--accent", t[2]);
+  document.documentElement.style.setProperty(
+    "--bg-color",
+    `linear-gradient(135deg, ${t[0]}, ${t[1]})`
+  );
+}
+
+function handleBgUpload(e) {
+  const file = e.target.files && e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function (ev) {
+    document.body.style.backgroundImage = `url(${ev.target.result})`;
+    document.body.style.backgroundSize = "cover";
+    document.body.style.backgroundPosition = "center";
+  };
+  reader.readAsDataURL(file);
+}
+function removeBg() {
+  document.body.style.backgroundImage = "";
+}
+
+/* ----------------------------
+  Course management UI
+---------------------------- */
+function renderCourseButtons() {
+  const container = document.getElementById("course-buttons");
+  container.innerHTML = "";
+  Object.keys(courses).forEach((id) => {
+    const card = document.createElement("div");
+    card.className = "course-card";
+    const btn = document.createElement("button");
+    btn.textContent = courses[id].name;
+    btn.onclick = () => openBoard(id);
+    card.appendChild(btn);
+
+    const rename = document.createElement("button");
+    rename.textContent = "✏️";
+    rename.title = "Rename";
+    rename.onclick = (ev) => {
+      ev.stopPropagation();
+      promptRenameSpecific(id);
+    };
+    card.appendChild(rename);
+
+    const del = document.createElement("button");
+    del.textContent = "🗑️";
+    del.title = "Delete";
+    del.onclick = (ev) => {
+      ev.stopPropagation();
+      promptDeleteSpecific(id);
+    };
+    card.appendChild(del);
+
+    container.appendChild(card);
+  });
+}
+
+function addCourse() {
+  const name = prompt("Enter course name:");
+  if (!name) return;
+  const id = uid("course");
+  // UPDATED: tasks is now an object mapping status to an array of task data
+  courses[id] = { name, tasks: { todo: [], progress: [], done: [] } }; 
+  renderCourseButtons();
+  saveCoursesToLocal(); // <-- SAVE
+}
+
+function promptRenameSpecific(id) {
+  const newName = prompt("Enter new name:", courses[id].name);
+  if (newName) {
+    courses[id].name = newName;
+    renderCourseButtons();
+    const board = document.getElementById(id);
+    if (board) board.querySelector("h2").textContent = `${newName} Task Board`;
+    saveCoursesToLocal(); // <-- SAVE
+  }
+}
+
+function promptDeleteSpecific(id) {
+  if (confirm(`Delete course "${courses[id].name}" and its board?`)) {
+    const board = document.getElementById(id);
+    if (board) board.remove();
+    delete courses[id];
+    renderCourseButtons();
+    if (activeCourseId === id) goBackToMain();
+    saveCoursesToLocal(); // <-- SAVE
+  }
+}
+// deleteCourse is an unused helper from original, not needed to save
+// renameCourse is an unused helper from original, not needed to save
+
+
+/* ----------------------------
+  Open board (full-page view)
+---------------------------- */
+function openBoard(courseId) {
+  activeCourseId = courseId;
+  document.getElementById("main-menu").style.display = "none";
+
+  let board = document.getElementById(courseId);
+  if (!board) {
+    board = document.createElement("div");
+    board.id = courseId;
+    board.className = "kanban-board";
+    board.innerHTML = `
+      <div class="board-top">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <button class="back-btn" onclick="goBackToMain()">← Back</button>
+          <h2 style="margin:0">${escapeHtml(
+            courses[courseId].name
+          )} Task Board</h2>
+        </div>
+        <div class="board-actions">
+          <button class="control-btn" onclick="openAddPopup('${courseId}_todo')">+ Add Task</button>
+         
+        </div>
+      </div>
+      <div class="kanban">
+        <div class="column" id="${courseId}_todo" ondragover="allowDrop(event)" ondrop="drop(event,'${courseId}_todo')">
+          <h3>To-do</h3>
+        </div>
+        <div class="column" id="${courseId}_progress" ondragover="allowDrop(event)" ondrop="drop(event,'${courseId}_progress')">
+          <h3>In Progress</h3>
+        </div>
+        <div class="column" id="${courseId}_done" ondragover="allowDrop(event)" ondrop="drop(event,'${courseId}_done')">
+          <h3>Done</h3>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(board);
+  }
+  
+  // RENDER TASKS FROM DATA STRUCTURE
+  renderTasks(courseId);
+
+  // show only this board
+  document
+    .querySelectorAll(".kanban-board")
+    .forEach((b) => (b.style.display = "none"));
+  board.style.display = "block";
+}
+
+// NEW: Function to render tasks from the data structure
+function renderTasks(courseId) {
+    const courseData = courses[courseId];
+    if (!courseData || !courseData.tasks) return;
+
+    TASK_STATUSES.forEach(status => {
+        const columnEl = document.getElementById(`${courseId}_${status}`);
+        if (!columnEl) return;
+        
+        // Clear old tasks (keep the h3 header)
+        while (columnEl.children.length > 1) {
+            columnEl.removeChild(columnEl.lastChild);
+        }
+
+        courseData.tasks[status].forEach(taskData => {
+            const taskEl = createTaskElement(taskData);
+            columnEl.appendChild(taskEl);
+        });
+    });
+}
+
+// NEW: Function to create a task DOM element from data
+function createTaskElement(taskData) {
+    const taskEl = document.createElement("div");
+    taskEl.className = "task";
+    taskEl.draggable = true;
+    taskEl.id = taskData.id;
+    taskEl.dataset.name = taskData.name;
+    taskEl.dataset.type = taskData.type;
+    taskEl.dataset.priority = taskData.priority;
+    taskEl.dataset.given = taskData.given;
+    taskEl.dataset.deadline = taskData.deadline;
+    taskEl.dataset.notes = taskData.notes;
+
+    taskEl.innerHTML = `${escapeHtml(taskData.name)}<br><small>${escapeHtml(
+        taskData.type
+    )} • ${escapeHtml(taskData.priority)} • Given ${escapeHtml(
+        taskData.given || "N/A"
+    )} • Due ${escapeHtml(taskData.deadline || "N/A")}</small>`;
+
+    taskEl.addEventListener("click", (ev) => openViewPopup(ev.currentTarget.id));
+    taskEl.addEventListener("dragstart", dragStart);
+    taskEl.addEventListener("dragend", dragEnd);
+
+    return taskEl;
+}
+
+
+/* Back to main */
+function goBackToMain() {
+  document
+    .querySelectorAll(".kanban-board")
+    .forEach((b) => (b.style.display = "none"));
+  document.getElementById("main-menu").style.display = "block";
+  activeCourseId = null;
+}
+
+/* ----------------------------
+  Add Task flow
+---------------------------- */
+function openAddPopup(columnFullId) {
+  currentAddColumn = columnFullId;
+  document.getElementById("input-task-name").value = "";
+  document.getElementById("input-task-type").value = "Individual";
+  document.getElementById("input-priority").value = "Medium";
+  document.getElementById("input-date-given").value = "";
+  document.getElementById("input-deadline").value = "";
+  document.getElementById("input-notes").value = "";
+  document.getElementById("addTaskOverlay").style.display = "flex";
+}
+function closeAddPopup() {
+  document.getElementById("addTaskOverlay").style.display = "none";
+}
+
+function confirmAddTask() {
+  const name = document.getElementById("input-task-name").value.trim();
+  if (!name) {
+    alert("Task name required");
+    return;
+  }
+  
+  const courseId = currentAddColumn.split("_").slice(0, -1).join("_");
+  const column = currentAddColumn.split("_").pop(); // 'todo'
+
+  // NEW: Store task data in the object, not just the ID
+  const taskData = {
+    id: uid("task"),
+    name: name,
+    type: document.getElementById("input-task-type").value,
+    priority: document.getElementById("input-priority").value,
+    given: document.getElementById("input-date-given").value,
+    deadline: document.getElementById("input-deadline").value,
+    notes: document.getElementById("input-notes").value,
+  };
+  
+  // Add data to the in-memory structure
+  if (courses[courseId] && courses[courseId].tasks[column]) {
+    courses[courseId].tasks[column].push(taskData);
+  } else {
+    alert("Error: Course or column not found in data structure.");
+    closeAddPopup();
+    return;
+  }
+  
+  // Render the new task element
+  const taskEl = createTaskElement(taskData);
+  const col = document.getElementById(currentAddColumn);
+  col.appendChild(taskEl);
+
+  saveCoursesToLocal(); // <-- SAVE
+  closeAddPopup();
+}
+
+/* ----------------------------
+  Drag & Drop (move element by id)
+---------------------------- */
+function dragStart(ev) {
+  ev.dataTransfer.setData("text/plain", ev.target.id);
+  // Store the original column ID for easy removal later
+  ev.dataTransfer.setData("column/id", ev.currentTarget.parentNode.id);
+  ev.currentTarget.classList.add("dragging");
+}
+function dragEnd(ev) {
+  ev.currentTarget.classList.remove("dragging");
+}
+function allowDrop(ev) {
+  ev.preventDefault();
+}
+
+function drop(ev, newColumnFullId) {
+  ev.preventDefault();
+  const taskId = ev.dataTransfer.getData("text/plain");
+  const oldColumnFullId = ev.dataTransfer.getData("column/id");
+  if (!taskId || !oldColumnFullId || oldColumnFullId === newColumnFullId) return;
+  
+  const taskEl = document.getElementById(taskId);
+  const newColEl = document.getElementById(newColumnFullId);
+  if (!taskEl || !newColEl) return;
+  
+  newColEl.appendChild(taskEl);
+
+  // --- Update the Data Structure ---
+  const courseId = newColumnFullId.split("_").slice(0, -1).join("_");
+  const oldStatus = oldColumnFullId.split("_").pop();
+  const newStatus = newColumnFullId.split("_").pop();
+
+  if (courses[courseId]) {
+      const oldTasks = courses[courseId].tasks[oldStatus];
+      const newTasks = courses[courseId].tasks[newStatus];
+
+      // Find the task data object
+      const taskIndex = oldTasks.findIndex(t => t.id === taskId);
+      if (taskIndex > -1) {
+          const taskData = oldTasks[taskIndex];
+          
+          // Remove from old column array
+          oldTasks.splice(taskIndex, 1);
+          
+          // Add to new column array
+          newTasks.push(taskData);
+          
+          saveCoursesToLocal(); // <-- SAVE
+      }
+  }
+}
+
+/* ----------------------------
+  View/Edit task popup
+---------------------------- */
+function openViewPopup(taskId) {
+  selectedTaskId = taskId;
+  const el = document.getElementById(taskId);
+  if (!el) return;
+  document.getElementById("edit-task-name").value = el.dataset.name || "";
+  document.getElementById("edit-task-type").value =
+    el.dataset.type || "Individual";
+  document.getElementById("edit-priority").value =
+    el.dataset.priority || "Medium";
+  document.getElementById("edit-date-given").value = el.dataset.given || "";
+  document.getElementById("edit-deadline").value = el.dataset.deadline || "";
+  document.getElementById("edit-notes").value = el.dataset.notes || "";
+  document.getElementById("viewTaskOverlay").style.display = "flex";
+}
+function closeViewPopup() {
+  document.getElementById("viewTaskOverlay").style.display = "none";
+  selectedTaskId = null;
+}
+
+function saveTaskEdits() {
+  if (!selectedTaskId) return;
+  const el = document.getElementById(selectedTaskId);
+  if (!el) return;
+  const name = document.getElementById("edit-task-name").value.trim();
+  if (!name) {
+    alert("Task name required");
+    return;
+  }
+  
+  // Update DOM datasets
+  el.dataset.name = name;
+  el.dataset.type = document.getElementById("edit-task-type").value;
+  el.dataset.priority = document.getElementById("edit-priority").value;
+  el.dataset.given = document.getElementById("edit-date-given").value;
+  el.dataset.deadline = document.getElementById("edit-deadline").value;
+  el.dataset.notes = document.getElementById("edit-notes").value;
+  
+  // Re-render task content
+  el.innerHTML = `${escapeHtml(el.dataset.name)}<br><small>${escapeHtml(
+    el.dataset.type
+  )} • ${escapeHtml(el.dataset.priority)} • Given ${escapeHtml(
+    el.dataset.given || "N/A"
+  )} • Due ${escapeHtml(el.dataset.deadline || "N/A")}</small>`;
+  
+  // --- Update the Data Structure ---
+  if (activeCourseId && courses[activeCourseId]) {
+      let taskFound = false;
+      // Loop through all columns to find the task by ID
+      for (const status of TASK_STATUSES) {
+          const taskIndex = courses[activeCourseId].tasks[status].findIndex(t => t.id === selectedTaskId);
+          if (taskIndex > -1) {
+              const taskData = courses[activeCourseId].tasks[status][taskIndex];
+              // Update the task data object
+              taskData.name = el.dataset.name;
+              taskData.type = el.dataset.type;
+              taskData.priority = el.dataset.priority;
+              taskData.given = el.dataset.given;
+              taskData.deadline = el.dataset.deadline;
+              taskData.notes = el.dataset.notes;
+              taskFound = true;
+              break; 
+          }
+      }
+      if(taskFound) saveCoursesToLocal(); // <-- SAVE
+  }
+
+  closeViewPopup();
+}
+
+function deleteCurrentTask() {
+  if (!selectedTaskId) return;
+  const el = document.getElementById(selectedTaskId);
+  if (!el) return;
+  
+  if (confirm("Delete this task?")) {
+    const parentColumnId = el.parentNode.id;
+    const columnStatus = parentColumnId.split("_").pop();
+    
+    // --- Update the Data Structure ---
+    if (activeCourseId && courses[activeCourseId]) {
+        if (courses[activeCourseId].tasks[columnStatus]) {
+             courses[activeCourseId].tasks[columnStatus] = 
+                courses[activeCourseId].tasks[columnStatus].filter(t => t.id !== selectedTaskId);
+             saveCoursesToLocal(); // <-- SAVE
+        }
+    }
+    
+    // Remove from DOM
+    el.remove();
+    closeViewPopup();
+  }
+}
+
+/* Helpers */
+function escapeHtml(s) {
+  return String(s || "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/"/g, "&quot;");
+}
+
+/* Init sample & render */
+function init() {
+  loadCoursesFromLocal(); // <-- LOAD data from storage
+  
+  if (Object.keys(courses).length === 0) {
+    // Only create sample data if no data was loaded
+    const sampleId = uid("course");
+    // NEW: initialize with correct structure
+    courses[sampleId] = { name: "Course Sample", tasks: { todo: [], progress: [], done: [] } }; 
+    saveCoursesToLocal(); // <-- SAVE initial sample data
+  }
+  
+  renderCourseButtons();
+  changeTheme("default");
+}
+init();
+
+    </script>
+  </body>
+</html>
